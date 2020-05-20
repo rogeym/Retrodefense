@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Equation of Line</title>
+        <meta charset="utf-8" />
+        <!-- Include Underscore -->
+        <script src="js/underscore.js"></script>
+        <!-- Include KAS -->
+        <script src="js/kas.js"></script>
+        <style>
+            * {
+                font-family: "Courier New"
+            }
+            body {
+                font-size: 20px;
+            }
+            #input {
+                width: 100%;
+                font-size: 72px;
+            }
+            .label {
+                display: inline-block;
+                margin-right:30px;
+                width:400px;
+                vertical-align: top;
+            }
+            .value {
+                display: inline-block;
+            }
+            .code {
+                font-size: 12px;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="params"></div>
+        <input type="text" id="input"></input>
+        <button id="submit" >Submit</button>
+        <div id="output"></div>
+        <script>
+            window.onload = function() {
+                var params = document.getElementById("params");
+                var input = document.getElementById("input");
+                var out = document.getElementById("output");
+                var submit = document.getElementById("submit");
+
+                var [x1,y1] = [0,0];
+                var [x2,y2] = [1,1].map((i)=>{return i*Math.round(Math.random()*20);});
+
+
+
+                if ("oninput" in input) {
+                    input.addEventListener("input", reprocess, false);
+                } else {
+                    input.attachEvent("onkeyup", reprocess);
+                }
+
+                input.addEventListener("submit")
+
+                submit.addEventListener("click",()=>{
+                    [x2,y2] = [1,1].map((i)=>{return i*Math.round(Math.random()*20);});
+                    input.value="";
+                    newParams();
+                });
+
+                
+
+
+                function addInfo(el, label, value) {
+                    el.innerHTML += "<div>"
+                        + "<div class='label'>" + label + "</div>"
+                        + "<div class='value'>" + value + "</div>"
+                        + "</div>";
+                }
+
+                function newParams(){
+                    params.innerHTML="";
+                    addInfo(params,"x1",x1);
+                    addInfo(params,"y1",y1);
+                    addInfo(params,"x2",x2);
+                    addInfo(params,"y2",y2);
+                }
+
+                function reprocess() {
+                    out.innerHTML = "";
+                    var [left,right,...extra] = input.value.split("=")
+                    var LSE = KAS.parse(left, {}).expr;
+                    var LSEE = LSE.eval({x:x1,y:y1});
+                    var RSE = KAS.parse(right, {}).expr;
+                    var RSEE = RSE.eval({x:x1,y:y1});
+                    // var parsed2 = parsed.eval({x:x.value,y:y.value});
+                    if (input.value === "") { return; }
+                    if (RSEE === undefined || LSEE === undefined) { return; }
+                    addInfo(out,"1) Left Side of Equation", LSEE);
+                    addInfo(out,"1) Right Side of Equation", RSEE); 
+
+                    var isSolved1 =  (LSEE == RSEE);
+                    addInfo(out,"Sides of Equation Equal?", isSolved1);   
+
+                    var LSE = KAS.parse(left, {}).expr;
+                    var LSEE = LSE.eval({x:x2,y:y2});
+                    var RSE = KAS.parse(right, {}).expr;
+                    var RSEE = RSE.eval({x:x2,y:y2});
+
+                    addInfo(out,"2) Left Side of Equation", LSEE);
+                    addInfo(out,"2) Right Side of Equation", RSEE);  
+                    addInfo(out,"Sides of Equation Equal?", LSEE == RSEE)   
+
+                    var isSolved2  =  (LSEE == RSEE);
+
+                    addInfo(out,`Line passes through 
+                                 both (${x1},${y1}) and (${x2},${y2}): `, isSolved1 && isSolved2);
+                     var parsed = RSE;
+                    // addInfo(out, "AST Representation:", parsed.repr());
+                    // addInfo(out, "Printed Representation:", parsed.normalize().print());
+                    // addInfo(out, "TeX Representation:", parsed.tex());
+                     addInfo(out, "Simplified?", parsed.isSimplified() ? "Yes" : "No");
+                     addInfo(out, "Simplified", parsed.simplify().normalize().print());
+                    // addInfo(out, "JSON Representation:", "<pre class='code'>"
+                    //     + JSON.stringify(parsed, null, 2)
+                    //     + "</pre>");
+                    // addInfo(out, "Compiled", parsed.compile().toString());
+                }
+            };
+        </script>
+    </body>
+</html>
