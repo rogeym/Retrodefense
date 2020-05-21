@@ -35,33 +35,39 @@
     <body>
         <div id="params"></div>
         <input type="text" id="input"></input>
-        <button id="submit" >Submit</button>
+        <button id="check" >Check</button>
+        <button id="getCoord" >Get New Coordinates</button>
         <div id="output"></div>
         <script>
             window.onload = function() {
                 var params = document.getElementById("params");
                 var input = document.getElementById("input");
                 var out = document.getElementById("output");
-                var submit = document.getElementById("submit");
+                var getCoord = document.getElementById("getCoord");
+                var check = document.getElementById("check");
 
                 var [x1,y1] = [0,0];
                 var [x2,y2] = [1,1].map((i)=>{return i*Math.round(Math.random()*20);});
 
 
+                newParams();
 
-                if ("oninput" in input) {
-                    input.addEventListener("input", reprocess, false);
-                } else {
-                    input.attachEvent("onkeyup", reprocess);
-                }
+                check.addEventListener("click",()=>{
+                    reprocess();
+                });
 
-                submit.addEventListener("click",()=>{
-                    [x2,y2] = [1,1].map((i)=>{return i*Math.round(Math.random()*20);});
+                getCoord.addEventListener("click",()=>{
                     input.value="";
                     newParams();
                 });
 
-                
+                function randomRange(min,max){
+                    return Math.round(min + Math.random()*(max-min));
+                }
+
+                function generateCoord(min,max){
+                    return [1,1].map((i)=>{return i*randomRange(min,max)});
+                }
 
 
                 function addInfo(el, label, value) {
@@ -73,18 +79,17 @@
 
                 function newParams(){
                     params.innerHTML="";
-                    addInfo(params,"x1",x1);
-                    addInfo(params,"y1",y1);
-                    addInfo(params,"x2",x2);
-                    addInfo(params,"y2",y2);
+                    [x2,y2] = generateCoord(-50,50);
+                    addInfo(params,"Your position (x1,y1)",`(${x1},${y1})`);
+                    addInfo(params,"Target position (x2,y2)",`(${x2},${y2})`);
                 }
 
                 function reprocess() {
                     out.innerHTML = "";
-                    var [left,right,...extra] = input.value.split("=")
+                    var [left,right,...extra] = input.value.split("=");
                     var LSE = KAS.parse(left, {}).expr;
                     var LSEE = LSE.eval({x:x1,y:y1});
-                    var RSE = KAS.parse(right, {}).expr;
+                    var RSE = KAS.parse(right, {}).expr; 
                     var RSEE = RSE.eval({x:x1,y:y1});
                     // var parsed2 = parsed.eval({x:x.value,y:y.value});
                     if (input.value === "") { return; }
