@@ -12,7 +12,7 @@
                 font-family: "Courier New"
             }
             body {
-                font-size: 20px;
+                font-size: 30px;
             }
             #input {
                 width: 100%;
@@ -58,6 +58,7 @@
 
                 getCoord.addEventListener("click",()=>{
                     input.value="";
+                    out.innerHTML = "";
                     newParams();
                 });
 
@@ -80,49 +81,44 @@
                 function newParams(){
                     params.innerHTML="";
                     [x2,y2] = generateCoord(-50,50);
-                    addInfo(params,"Your position (x1,y1)",`(${x1},${y1})`);
-                    addInfo(params,"Target position (x2,y2)",`(${x2},${y2})`);
+                    addInfo(params,"You (x1,y1):",`(${x1},${y1})`);
+                    addInfo(params,"Target (x2,y2):",`(${x2},${y2})`);
                 }
 
                 function reprocess() {
                     out.innerHTML = "";
+                    if (input.value === "") { return; }
                     var [left,right,...extra] = input.value.split("=");
+                    
+                    var parsed = KAS.parse(input.value).expr;
+
                     var LSE = KAS.parse(left, {}).expr;
                     var LSEE = LSE.eval({x:x1,y:y1});
                     var RSE = KAS.parse(right, {}).expr; 
                     var RSEE = RSE.eval({x:x1,y:y1});
-                    // var parsed2 = parsed.eval({x:x.value,y:y.value});
-                    if (input.value === "") { return; }
-                    if (RSEE === undefined || LSEE === undefined) { return; }
-                    addInfo(out,"1) Left Side of Equation", LSEE);
-                    addInfo(out,"1) Right Side of Equation", RSEE); 
 
+                    if (RSEE === undefined || LSEE === undefined) { return; }
                     var isSolved1 =  (LSEE == RSEE);
-                    addInfo(out,"Sides of Equation Equal?", isSolved1);   
 
                     var LSE = KAS.parse(left, {}).expr;
                     var LSEE = LSE.eval({x:x2,y:y2});
                     var RSE = KAS.parse(right, {}).expr;
                     var RSEE = RSE.eval({x:x2,y:y2});
 
-                    addInfo(out,"2) Left Side of Equation", LSEE);
-                    addInfo(out,"2) Right Side of Equation", RSEE);  
-                    addInfo(out,"Sides of Equation Equal?", LSEE == RSEE)   
 
+                    if (RSEE === undefined || LSEE === undefined) { return; }
                     var isSolved2  =  (LSEE == RSEE);
 
+                    var isSimplified = parsed.isSimplified();
+                    var isLineCorrect = isSolved1 && isSolved2;
+
                     addInfo(out,`Line passes through 
-                                 both (${x1},${y1}) and (${x2},${y2}): `, isSolved1 && isSolved2);
-                     var parsed = RSE;
-                    // addInfo(out, "AST Representation:", parsed.repr());
-                    // addInfo(out, "Printed Representation:", parsed.normalize().print());
-                    // addInfo(out, "TeX Representation:", parsed.tex());
-                     addInfo(out, "Simplified?", parsed.isSimplified() ? "Yes" : "No");
-                     addInfo(out, "Simplified", parsed.simplify().normalize().print());
-                    // addInfo(out, "JSON Representation:", "<pre class='code'>"
-                    //     + JSON.stringify(parsed, null, 2)
-                    //     + "</pre>");
-                    // addInfo(out, "Compiled", parsed.compile().toString());
+                                 both (${x1},${y1}) and (${x2},${y2}): `, isLineCorrect);
+                    addInfo(out, "Is the equation simplified?", isSimplified ? "Yes" : "No");
+
+                    if (isLineCorrect && isSimplified){
+                        addInfo(out, "You hit the target!","");
+                    } else {addInfo(out,"You missed. Try again.","");}
                 }
             };
         </script>
